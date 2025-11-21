@@ -56,16 +56,34 @@ docker run --rm -v C:/Users/username/AppData/Roaming/.minecraft/saves/MyWorld:/w
 
 ## Cloudflare R2 連携
 
-環境変数を設定することで、変換した画像を R2 に自動アップロードできます:
+環境変数を設定することで、変換した画像を R2 に自動アップロードできます。
 
-```bash
-export R2_ACCOUNT_ID="your-account-id"
-export R2_ACCESS_KEY_ID="your-access-key"
-export R2_SECRET_ACCESS_KEY="your-secret-key"
-export R2_BUCKET_NAME="your-bucket-name"
+### 環境変数
+
+| 変数名 | 説明 |
+|--------|------|
+| `R2_ACCOUNT_ID` | Cloudflare アカウント ID |
+| `R2_ACCESS_KEY_ID` | R2 アクセスキー ID |
+| `R2_SECRET_ACCESS_KEY` | R2 シークレットアクセスキー |
+| `R2_BUCKET_NAME` | R2 バケット名 |
+
+### .env ファイルを使用する場合
+
+`.env` ファイルを作成:
+```
+R2_ACCOUNT_ID=your-account-id
+R2_ACCESS_KEY_ID=your-access-key
+R2_SECRET_ACCESS_KEY=your-secret-key
+R2_BUCKET_NAME=your-bucket-name
 ```
 
-Docker での R2 連携:
+Docker で `.env` ファイルを読み込んで実行:
+```bash
+docker run --rm --env-file .env -v /path/to/your-world:/world map-to-img
+```
+
+### 環境変数を直接指定する場合
+
 ```bash
 docker run --rm \
   -e R2_ACCOUNT_ID="your-account-id" \
@@ -74,4 +92,16 @@ docker run --rm \
   -e R2_BUCKET_NAME="your-bucket-name" \
   -v /path/to/your-world:/world \
   map-to-img
+```
+
+## 定期実行（Cron）
+
+1時間ごとに自動実行する場合、crontab に以下を追加:
+
+```bash
+crontab -e
+```
+
+```cron
+0 * * * * docker run --rm --env-file /path/to/.env -v /path/to/your-world:/world map-to-img >> /var/log/map-to-img.log 2>&1
 ```
