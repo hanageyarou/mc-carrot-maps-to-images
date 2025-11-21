@@ -19,7 +19,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -55,6 +57,7 @@ public class Main {
         Files.createDirectories(hashDir);
         System.out.println("Writing files to " + out);
 
+        Map<String, String> manifest = new HashMap<>();
         int num = 0;
         int skipped = 0;
         for (Path p : mapFiles) {
@@ -68,6 +71,8 @@ public class Main {
                 if (Files.exists(hashFile)) {
                     String storedHash = Files.readString(hashFile).trim();
                     if (storedHash.equals(currentHash)) {
+                        String hashPrefix = storedHash.substring(0, 8);
+                        manifest.put(mapName, mapName + "_" + hashPrefix + ".webp");
                         skipped++;
                         continue; // Skip unchanged file
                     }
@@ -93,7 +98,8 @@ public class Main {
                 }
 
                 // write image to temp location
-                String webpFileName = mapName + ".webp";
+                String hashPrefix = currentHash.substring(0, 8);
+                String webpFileName = mapName + "_" + hashPrefix + ".webp";
                 Path outFile = out.resolve(webpFileName);
                 Path tempFile = out.resolve("temp");
                 ImageIO.write(img, "webp", tempFile.toFile());
@@ -106,6 +112,9 @@ public class Main {
                     uploadToR2(outFile, webpFileName);
                 }
 
+                // Add to manifest
+                manifest.put(mapName, webpFileName);
+
                 // Save hash after successful conversion and upload
                 Files.writeString(hashFile, currentHash);
 
@@ -116,6 +125,27 @@ public class Main {
             }
         }
         System.out.println("Done! Converted " + num + " maps, skipped " + skipped + " unchanged.");
+
+        // Generate and upload manifest.json (only if there were changes)
+        if (num > 0 && !manifest.isEmpty()) {
+            Path manifestFile = out.resolve("manifest.json");
+            StringBuilder json = new StringBuilder("{\n");
+            int i = 0;
+            for (Map.Entry<String, String> entry : manifest.entrySet()) {
+                json.append("  \"").append(entry.getKey()).append("\": \"").append(entry.getValue()).append("\"");
+                if (++i < manifest.size()) {
+                    json.append(",");
+                }
+                json.append("\n");
+            }
+            json.append("}");
+            Files.writeString(manifestFile, json.toString());
+            System.out.println("Generated manifest.json");
+
+            if (s3Client != null) {
+                uploadToR2(manifestFile, "manifest.json", "application/json");
+            }
+        }
 
         if (s3Client != null) {
             s3Client.close();
@@ -146,11 +176,15 @@ public class Main {
     }
 
     private static void uploadToR2(Path file, String key) {
+        uploadToR2(file, key, "image/webp");
+    }
+
+    private static void uploadToR2(Path file, String key, String contentType) {
         try {
             PutObjectRequest putRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
-                    .contentType("image/webp")
+                    .contentType(contentType)
                     .build();
 
             s3Client.putObject(putRequest, file);
