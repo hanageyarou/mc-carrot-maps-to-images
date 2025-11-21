@@ -1,4 +1,39 @@
-
+# IDE
 .idea/
-target/
 *.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# Gradle
+build/
+.gradle/
+gradle-*/
+!gradle-wrapper.jar
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude
+.claude/
+
+# App output
+out/
+map_hash/
