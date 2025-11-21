@@ -1,10 +1,10 @@
 # minecraft-maps-to-images
 
-Minecraft のマップアイテムを PNG 画像に変換するツールです。
+Minecraft のマップアイテムを WebP 画像に変換するツールです。
 
 ## 機能
 
-- `.dat` 形式のマップファイルを PNG 画像に変換
+- `.dat` 形式のマップファイルを WebP 画像に変換
 - ハッシュ値による差分検出（変更されたファイルのみ変換）
 - Cloudflare R2 への自動アップロード（オプション）
 
@@ -50,7 +50,7 @@ docker run --rm -v C:/Users/username/AppData/Roaming/.minecraft/saves/MyWorld:/w
 ```
 /world/
   ├── data/map_0.dat       # 元のマップファイル
-  ├── out/map_0.png        # 変換された PNG
+  ├── out/map_0.webp       # 変換された WebP
   └── map_hash/map_0.hash  # ハッシュファイル（差分検出用）
 ```
 

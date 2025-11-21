@@ -93,17 +93,17 @@ public class Main {
                 }
 
                 // write image to temp location
-                String pngFileName = mapName + ".png";
-                Path outFile = out.resolve(pngFileName);
+                String webpFileName = mapName + ".webp";
+                Path outFile = out.resolve(webpFileName);
                 Path tempFile = out.resolve("temp");
-                ImageIO.write(img, "png", tempFile.toFile());
+                ImageIO.write(img, "webp", tempFile.toFile());
 
                 // Move temp file to output
                 Files.move(tempFile, outFile, StandardCopyOption.REPLACE_EXISTING);
 
                 // Upload to R2 if configured
                 if (s3Client != null) {
-                    uploadToR2(outFile, pngFileName);
+                    uploadToR2(outFile, webpFileName);
                 }
 
                 // Save hash after successful conversion and upload
@@ -150,7 +150,7 @@ public class Main {
             PutObjectRequest putRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
-                    .contentType("image/png")
+                    .contentType("image/webp")
                     .build();
 
             s3Client.putObject(putRequest, file);
