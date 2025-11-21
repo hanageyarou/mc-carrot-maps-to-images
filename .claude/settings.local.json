@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./mvnw clean package:*)"
+      "Bash(./mvnw clean package:*)",
+      "Bash(./gradlew build:*)"
     ],
     "deny": [],
     "ask": []
